@@ -8,7 +8,6 @@
 # while - all moves not is done
 # continue - after next player move
 # break - if all field is full
-# roll to choose who is player first
 # if your solution is too big, it is not bad. take it and then think about how to minimize it.
 #
 
@@ -29,9 +28,9 @@ def first_player_move(x):
     try:
         h = int(input('Enter the horizontal coordinates  first(1-3):\n'))
         v = int(input('and then vertical(1-3):\n'))
-        if (str(h) + str(v)) not in move_history:
-            move_history.append(str(h) + str(v))
-            # print(f"Move history: {move_history}.")
+        if (str(h) + str(v)) not in move_history:      # Write down the move in the list and
+            move_history.append(str(h) + str(v))       # at repetition of a move do not let pass on.
+            # print(f"Move history: {move_history}.")  # You may show Move history list if you need.
             if (1 <= h <= 3) and (1 <= v <= 3):
                 if h == 1:
                     if v == 1:
@@ -67,8 +66,8 @@ def first_player_move(x):
             return first_player_move(x)
     except ValueError:
         print('_________________________________________________')
-        print("Values do not satisfy the conditions. Try again.")
-        print('_________________________________________________')
+        print("Values do not satisfy the conditions. Try again.")   # Catch ValueError when entering coordinates
+        print('_________________________________________________')  # different from previous conditions.
         return first_player_move(x)
 
 
@@ -122,20 +121,20 @@ def second_player_move(x):
 
 def game_cycle():
     while True:
-        if '-' in (*a[1][1:4], *a[2][1:4], *a[3][1:4]):
-            first_player_move(a)
+        if '-' in (*a[1][1:4], *a[2][1:4], *a[3][1:4]):  # If the field is not filled completely,
+            first_player_move(a)                         # then the first player moves.
             time.sleep(0.5)
             print(f'{a[0]}\n{a[1]}\n{a[2]}\n{a[3]}\n')
-            if any([('xxx' == a[1][1] + a[2][1] + a[3][1]), ('xxx' == a[1][2] + a[2][2] + a[3][2]),
-                    ('xxx' == a[1][3] + a[2][3] + a[3][3]), ('xxx' == a[1][1] + a[2][2] + a[3][3]),
-                    ('xxx' == a[3][1] + a[2][2] + a[1][3]), ('xxx' == a[1][1] + a[1][2] + a[1][3]),
+            if any([('xxx' == a[1][1] + a[2][1] + a[3][1]), ('xxx' == a[1][2] + a[2][2] + a[3][2]),  # Condition of
+                    ('xxx' == a[1][3] + a[2][3] + a[3][3]), ('xxx' == a[1][1] + a[2][2] + a[3][3]),  # victory of the
+                    ('xxx' == a[3][1] + a[2][2] + a[1][3]), ('xxx' == a[1][1] + a[1][2] + a[1][3]),  # the first player.
                     ('xxx' == a[2][1] + a[2][2] + a[2][3]), ('xxx' == a[3][1] + a[3][2] + a[3][3])]):
                 print(f'Congratulations, {first_player_name}! You WIN!')
                 time.sleep(5)
                 break
 
-        if '-' in (*a[1][1:4], *a[2][1:4], *a[3][1:4]):
-            second_player_move(a)
+        if '-' in (*a[1][1:4], *a[2][1:4], *a[3][1:4]):  # If the first player don't win, and we have no draw,
+            second_player_move(a)                        # then the second player moves.
             time.sleep(0.5)
             print(f'{a[0]}\n{a[1]}\n{a[2]}\n{a[3]}\n')
         else:
