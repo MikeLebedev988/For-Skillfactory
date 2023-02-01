@@ -86,49 +86,6 @@ class GameField:
         return self.ship_on_field
 
 
-players_set_of_ships = SetOfShipsQuantity(4, 2, 1)
-players_gamefield = GameField(players_set_of_ships)
-print(players_gamefield.ship_on_field)
-print(players_set_of_ships.ship2_quantity)
-
-# ai_set_of_ships = SetOfShips(ship1_pos=ShipPos(rnd.randint(0, 5), rnd.randint(0, 5), rnd.randint(0, 1)),
-#                              ship2_pos=ShipPos(rnd.randint(0, 5), rnd.randint(0, 5), rnd.randint(0, 1)),
-#                              ship3_pos=ShipPos(rnd.randint(0, 5), rnd.randint(0, 5), rnd.randint(0, 1)))
-# ai_gamefield = GameField(ai_set_of_ships)
-# print(ai_gamefield.ship_on_field)
-
-# def ship3(field):
-#     try:
-#         x, y = map(int, input('Enter the coordinates of the beginning of the ship(x/y).').split())
-#         ship_direction = input('Enter ship direction horizontally or vertically (h/v):\n')
-#         if ship_direction == 'h' and field[x][y] != '■':
-#             field[x][y] = '■'
-#             field[x][y+1] = '■'
-#             field[x][y+2] = '■'
-#         elif ship_direction == 'v' and field[x][y] != '■':
-#             field[x][y] = '■'
-#             field[x+1][y] = '■'
-#             field[x+2][y] = '■'
-#         else:
-#             print('The entered data is not correct.')
-#     except ValueError:
-#         print('The entered data is not correct.')
-#     except IndexError:
-#         print('Outside the board.')
-#
-#
-# def show_field(f):
-#     print('  1  2  3  4  5  6')
-#     for i in range(len(field)):
-#         print(str(i + 1) + ' ' + '  '.join(field[i]))
-#
-#
-# def show_field_2(f):
-#     print('  1  2  3  4  5  6')
-#     for i in range(len(field2)):
-#         print(str(i + 1) + ' ' + '  '.join(field2[i]))
-#
-#
 # def user_hit(f):
 #     global x, y
 #     while True:
