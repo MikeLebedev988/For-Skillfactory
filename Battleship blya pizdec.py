@@ -13,6 +13,8 @@ def show_field(f):
 
 class Pos:
     def __init__(self):
+        self.x = None
+        self.y = None
         self.set_ship_x()
         self.set_ship_y()
 
@@ -31,6 +33,8 @@ class Pos:
 
 class AiPos:
     def __init__(self):
+        self.y = None
+        self.x = None
         self.set_ship_x()
         self.set_ship_y()
 
@@ -47,28 +51,9 @@ class AiPos:
         return self.y
 
 
-# def set_ship1_on_field(f):
-#     f[ship1_pos.x][ship1_pos.y] = '■'
-#
-#
-# def set_ship2_on_field(f):
-#     if ship2_pos.direct == 'h':
-#         f[ship2_pos.x][ship2_pos.y], f[ship2_pos.x][ship2_pos.y + 1] = '■', '■'
-#     else:
-#         f[ship2_pos.x][ship2_pos.y], f[ship2_pos.x + 1][ship2_pos.y] = '■', '■'
-#
-#
-# def set_ship3_on_field(f):
-#     if ship3_pos.direct == 'h':
-#         f[ship3_pos.x][ship3_pos.y], f[ship3_pos.x][ship3_pos.y + 1] = '■', '■'
-#         f[ship3_pos.x][ship3_pos.y + 2] = '■'
-#     else:
-#         f[ship3_pos.x][ship3_pos.y], f[ship3_pos.x + 1][ship3_pos.y] = '■', '■'
-#         f[ship3_pos.x + 2][ship3_pos.y] = '■'
-
-
 class Ship:
     def __init__(self, quantity, length):
+        self.direct = None
         self.length = length
         self.quantity = quantity
 
@@ -82,6 +67,7 @@ class Ship:
 class AiShip(Ship):
     def __init__(self, quantity, length):
         super().__init__(quantity, length)
+        self.direct = None
 
     def set_direct(self):
         self.direct = rnd.randint(0, 1)
@@ -91,114 +77,192 @@ class AiShip(Ship):
 
 
 class GameField:
-    def __init__(self, field_player):
-        self.set_ship1_on_field(field_player)
-        self.set_ship2_on_field(field_player)
-        self.set_ship3_on_field(field_player)
-
+    def __init__(self, field_p):
+        self.set_ship1_on_field(field_p)
+        self.set_ship2_on_field(field_p)
+        self.set_ship3_on_field(field_p)
 
     @staticmethod
-    def set_ship1_on_field(field_player):
+    def set_ship1_on_field(field_p):
         ship1 = Ship(4, 1)
         for i in range(ship1.quantity):
             ship1_pos = Pos()
-            field_player[ship1_pos.x][ship1_pos.y] = '■'
-            show_field(field_player)
+            field_p[ship1_pos.x][ship1_pos.y] = '■'
+            show_field(field_p)
 
     @staticmethod
-    def set_ship2_on_field(field_player):
+    def set_ship2_on_field(field_p):
         ship2 = Ship(2, 2)
         for i in range(ship2.quantity):
             ship2_pos = Pos()
             if ship2.length > 1:
                 ship2.set_direct()
                 if ship2.direct == 'h':
-                    field_player[ship2_pos.x][ship2_pos.y], field_player[ship2_pos.x][ship2_pos.y + 1] = '■', '■'
+                    field_p[ship2_pos.x][ship2_pos.y], field_p[ship2_pos.x][ship2_pos.y + 1] = '■', '■'
                 else:
-                    field_player[ship2_pos.x][ship2_pos.y], field_player[ship2_pos.x + 1][ship2_pos.y] = '■', '■'
-            show_field(field_player)
+                    field_p[ship2_pos.x][ship2_pos.y], field_p[ship2_pos.x + 1][ship2_pos.y] = '■', '■'
+            show_field(field_p)
 
     @staticmethod
-    def set_ship3_on_field(field_player):
+    def set_ship3_on_field(field_p):
         ship3 = Ship(1, 3)
         for i in range(ship3.quantity):
             ship3_pos = Pos()
             if ship3.length > 1:
                 ship3.set_direct()
                 if ship3.direct == 'h':
-                    field_player[ship3_pos.x][ship3_pos.y], field_player[ship3_pos.x][ship3_pos.y + 1] = '■', '■'
-                    field_player[ship3_pos.x][ship3_pos.y + 2] = '■'
+                    field_p[ship3_pos.x][ship3_pos.y], field_p[ship3_pos.x][ship3_pos.y + 1] = '■', '■'
+                    field_p[ship3_pos.x][ship3_pos.y + 2] = '■'
                 else:
-                    field_player[ship3_pos.x][ship3_pos.y], field_player[ship3_pos.x + 1][ship3_pos.y] = '■', '■'
-                    field_player[ship3_pos.x + 2][ship3_pos.y] = '■'
-            show_field(field_player)
+                    field_p[ship3_pos.x][ship3_pos.y], field_p[ship3_pos.x + 1][ship3_pos.y] = '■', '■'
+                    field_p[ship3_pos.x + 2][ship3_pos.y] = '■'
+            show_field(field_p)
+
+
+def ship1_set_pos_and_set_on_field(ai_field):
+    try:
+        ship1_ai_pos = AiPos()
+        print(ship1_ai_pos.x, ship1_ai_pos.y)
+        if all((ai_field[ship1_ai_pos.x][ship1_ai_pos.y] == '0', ai_field[ship1_ai_pos.x][ship1_ai_pos.y - 1] == '0',
+                ai_field[ship1_ai_pos.x][ship1_ai_pos.y + 1] == '0',
+                ai_field[ship1_ai_pos.x - 1][ship1_ai_pos.y] == '0',
+                ai_field[ship1_ai_pos.x + 1][ship1_ai_pos.y] == '0')):
+            ai_field[ship1_ai_pos.x][ship1_ai_pos.y] = '■'
+        else:
+            print("Что может пойти не так?")
+            return ship1_set_pos_and_set_on_field(ai_field)
+    except IndexError:
+        print("Out of range, blya.")
+        return ship1_set_pos_and_set_on_field(ai_field)
+
+
+def ship2_direct(ai_field):
+    ship2_ai_pos = AiPos()
+    if ship2_ai.length > 1:
+        ship2_ai.set_direct()
+        try:
+            if ship2_ai.direct == 0:
+                if all((
+                        ai_field[ship2_ai_pos.x][ship2_ai_pos.y] == '0',
+                        ai_field[ship2_ai_pos.x][ship2_ai_pos.y + 1] == '0',
+                        ai_field[ship2_ai_pos.x][ship2_ai_pos.y - 1] == '0',
+                        ai_field[ship2_ai_pos.x - 1][ship2_ai_pos.y] == '0',
+                        ai_field[ship2_ai_pos.x + 1][ship2_ai_pos.y] == '0',
+                        ai_field[ship2_ai_pos.x - 1][ship2_ai_pos.y + 1] == '0',
+                        ai_field[ship2_ai_pos.x + 1][ship2_ai_pos.y + 1] == '0',
+                        ai_field[ship2_ai_pos.x][ship2_ai_pos.y + 2] == '0')):
+                    ai_field[ship2_ai_pos.x][ship2_ai_pos.y], ai_field[ship2_ai_pos.x][
+                        ship2_ai_pos.y + 1] = '■', '■'
+                    show_field(ai_field)
+                else:
+                    print("Что может пойти не так?")
+                    return ship2_direct(ai_field)
+            elif ship2_ai.direct == 1:
+                if all((
+                        ai_field[ship2_ai_pos.x][ship2_ai_pos.y] == '0',
+                        ai_field[ship2_ai_pos.x + 1][ship2_ai_pos.y] == '0',
+                        ai_field[ship2_ai_pos.x - 1][ship2_ai_pos.y] == '0',
+                        ai_field[ship2_ai_pos.x + 2][ship2_ai_pos.y] == '0',
+                        ai_field[ship2_ai_pos.x][ship2_ai_pos.y - 1] == '0',
+                        ai_field[ship2_ai_pos.x][ship2_ai_pos.y + 1] == '0',
+                        ai_field[ship2_ai_pos.x + 1][ship2_ai_pos.y - 1] == '0',
+                        ai_field[ship2_ai_pos.x + 1][ship2_ai_pos.y + 1] == '0')):
+                    ai_field[ship2_ai_pos.x][ship2_ai_pos.y], ai_field[ship2_ai_pos.x + 1][
+                        ship2_ai_pos.y] = '■', '■'
+                    show_field(ai_field)
+                else:
+                    print("Что может пойти не так?")
+                    return ship2_direct(ai_field)
+        except IndexError:
+            print("Out of range, blya.")
+            return ship2_direct(ai_field)
+
+
+def ship2_set_pos_and_set_on_field(ai_field, ship2_dir):
+    ship2_dir(ai_field)
+
+
+def ship3_direct(ai_field):
+    ship3_ai_pos = AiPos()
+    if ship3_ai.length > 1:
+        ship3_ai.set_direct()
+        try:
+            if ship3_ai.direct == 0:
+                if all((ai_field[ship3_ai_pos.x][ship3_ai_pos.y] == '0',
+                        ai_field[ship3_ai_pos.x][ship3_ai_pos.y + 1] == '0',
+                        ai_field[ship3_ai_pos.x][ship3_ai_pos.y + 2] == '0',
+                        ai_field[ship3_ai_pos.x][ship3_ai_pos.y + 3] == '0',
+                        ai_field[ship3_ai_pos.x][ship3_ai_pos.y - 1] == '0',
+                        ai_field[ship3_ai_pos.x - 1][ship3_ai_pos.y] == '0',
+                        ai_field[ship3_ai_pos.x + 1][ship3_ai_pos.y] == '0',
+                        ai_field[ship3_ai_pos.x - 1][ship3_ai_pos.y + 1] == '0',
+                        ai_field[ship3_ai_pos.x + 1][ship3_ai_pos.y + 1] == '0',
+                        ai_field[ship3_ai_pos.x - 1][ship3_ai_pos.y + 2] == '0',
+                        ai_field[ship3_ai_pos.x + 1][ship3_ai_pos.y + 2] == '0')):
+                    ai_field[ship3_ai_pos.x][ship3_ai_pos.y], ai_field[ship3_ai_pos.x][ship3_ai_pos.y + 1], \
+                     ai_field[ship3_ai_pos.x][ship3_ai_pos.y + 2] = '■', '■', '■'
+                    show_field(ai_field)
+                else:
+                    print("Что может пойти не так?")
+                    return ship3_direct(ai_field)
+            if ship3_ai.direct == 1:
+                if all((ai_field[ship3_ai_pos.x][ship3_ai_pos.y] == '0',
+                        ai_field[ship3_ai_pos.x + 1][ship3_ai_pos.y] == '0',
+                        ai_field[ship3_ai_pos.x + 2][ship3_ai_pos.y] == '0',
+                        ai_field[ship3_ai_pos.x - 1][ship3_ai_pos.y] == '0',
+                        ai_field[ship3_ai_pos.x][ship3_ai_pos.y - 1] == '0',
+                        ai_field[ship3_ai_pos.x][ship3_ai_pos.y + 1] == '0',
+                        ai_field[ship3_ai_pos.x + 1][ship3_ai_pos.y - 1] == '0',
+                        ai_field[ship3_ai_pos.x + 1][ship3_ai_pos.y + 1] == '0',
+                        ai_field[ship3_ai_pos.x + 2][ship3_ai_pos.y - 1] == '0',
+                        ai_field[ship3_ai_pos.x + 2][ship3_ai_pos.y + 1] == '0',
+                        ai_field[ship3_ai_pos.x + 3][ship3_ai_pos.y] == '0')):
+                    ai_field[ship3_ai_pos.x][ship3_ai_pos.y], \
+                     ai_field[ship3_ai_pos.x + 1][ship3_ai_pos.y], \
+                     ai_field[ship3_ai_pos.x + 2][ship3_ai_pos.y] = '■', '■', '■'
+                    show_field(ai_field)
+                else:
+                    print("Что может пойти не так?")
+                    return ship3_direct(ai_field)
+        except IndexError:
+            print("Out of range, blya.")
+            return ship3_direct(ai_field)
+
+
+def ship3_set_pos_and_set_on_field(ai_field, ship3_dir):
+    ship3_dir(ai_field)
 
 
 class AiGameField:
-    def __init__(self, field_ai):
-        self.set_ship1_ai_on_field(field_ai)
-        self.set_ship2_ai_on_field(field_ai)
-        self.set_ship3_ai_on_field(field_ai)
+    def __init__(self, ai_field):
+        self.set_ship3_ai_on_field(ai_field)
+        self.set_ship2_ai_on_field(ai_field)
+        self.set_ship1_ai_on_field(ai_field)
 
     @staticmethod
-    def set_ship1_ai_on_field(field_ai):
+    def set_ship1_ai_on_field(ai_field):
         ship1_ai = AiShip(4, 1)
         for i in range(ship1_ai.quantity):
-            ship1_ai_pos = AiPos()
-            field_ai[ship1_ai_pos.x][ship1_ai_pos.y] = '■'
-            show_field(field_ai)
+            ship1_set_pos_and_set_on_field(ai_field)
+            show_field(ai_field)
 
     @staticmethod
-    def set_ship2_ai_on_field(field_ai):
-        ship2_ai = AiShip(2, 2)
+    def set_ship2_ai_on_field(ai_field):
         for i in range(ship2_ai.quantity):
-            try:
-                ship2_ai_pos = AiPos()
-                if ship2_ai.length > 1:
-                    ship2_ai.set_direct()
-                    if ship2_ai.direct == 0:
-                        field_ai[ship2_ai_pos.x][ship2_ai_pos.y], field_ai[ship2_ai_pos.x][ship2_ai_pos.y + 1] = '■', '■'
-                    else:
-                        field_ai[ship2_ai_pos.x][ship2_ai_pos.y], field_ai[ship2_ai_pos.x + 1][ship2_ai_pos.y] = '■', '■'
-            except IndexError:
-                print("Грёбанный кампухтер! Краёв не видишь?!")
-            show_field(field_ai)
+            ship2_set_pos_and_set_on_field(ai_field, ship2_direct)
+            show_field(ai_field)
 
     @staticmethod
-    def set_ship3_ai_on_field(field_ai):
-        ship3_ai = AiShip(1, 3)
+    def set_ship3_ai_on_field(ai_field):
         for i in range(ship3_ai.quantity):
-            try:
-                ship3_ai_pos = AiPos()
-                if ship3_ai.length > 1:
-                    ship3_ai.set_direct()
-                    if ship3_ai.direct == 0:
-                        field_ai[ship3_ai_pos.x][ship3_ai_pos.y], field_ai[ship3_ai_pos.x][ship3_ai_pos.y + 1] = '■', '■'
-                        field_ai[ship3_ai_pos.x][ship3_ai_pos.y + 2] = '■'
-                    else:
-                        field_ai[ship3_ai_pos.x][ship3_ai_pos.y], field_ai[ship3_ai_pos.x + 1][ship3_ai_pos.y] = '■', '■'
-                        field_ai[ship3_ai_pos.x + 2][ship3_ai_pos.y] = '■'
-            except IndexError:
-                print('Грёбаный кампухтер! Краёв не видишь?!')
-            show_field(field_ai)
-
-
-# class GameField:
-#     def __init__(self, ship1_quantity, ship2_quantity, ship3_quantity):
+            ship3_set_pos_and_set_on_field(ai_field, ship3_direct)
+            show_field(ai_field)
 
 
 # We may declare this variable not now, but in a function when we need it.
 
 
-players_gamefield = GameField(field_player)
+ship3_ai = AiShip(1, 3)
+ship2_ai = AiShip(2, 2)
 ai_gamefield = AiGameField(field_ai)
-
-# for i in range(ship1.quantity):
-#     ship1_pos = Pos()
-#     set_ship1_on_field(field)
-# for i in range(ship2.quantity):
-#     ship2_pos = Pos()
-#     set_ship2_on_field(field)
-# for i in range(ship3.quantity):
-#     ship3_pos = Pos()
-#     set_ship3_on_field(field)
+# players_gamefield = GameField(field_player)
