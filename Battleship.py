@@ -1,132 +1,226 @@
-import random as rnd
-
-field = [['o'] * 6 for _ in range(6)]
-field2 = [['.'] * 6 for _ in range(6)]
-field5 = [['~'] * 6 for _ in range(6)]
+from random import randint
 
 
-def show_field(f):
-    print('  1  2  3  4  5  6')
-    for i in range(len(field5)):
-        print(str(i + 1) + ' ' + '  '.join(field5[i]))
+class BoardException(Exception):
+    pass
 
 
-class ShipPos:
-    def __init__(self, x='', y='', direct='') -> None:
+class BoardOutException(BoardException):
+    def __str__(self):
+        return "You are trying to shoot outside the board"
+
+
+class BoardUsedException(BoardException):
+    def __str__(self):
+        return "You have already shooted in this cell."
+
+
+class BoardWrongShipException(BoardException):
+    pass
+
+
+class Pos:
+    def __init__(self, x, y):
         self.x = x
         self.y = y
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __repr__(self):
+        return f"Pos({self.x}, {self.y})"
+
+a = Pos(3,4)
+
+class Ship:
+    def __init__(self, pos, length, direct):
+        self.pos = pos
+        self.length = length
         self.direct = direct
-        self.set_ship_pos()
+        self.lives = length
 
-    def set_ship_pos(self):
-        self.x = int(input("Enter your ship 'x' coordinate:\n"))
-        self.y = int(input("Enter your ship 'y' coordinate:\n"))
-        self.direct = input("Enter your ship direction(h or v):\n")
+    @property
+    def positions(self):
+        ship_positions = []
+        for i in range(self.length):
+            cur_x = self.pos.x
+            cur_y = self.pos.y
 
-    def get_ship_pos(self):
-        return self.x, self.y, self.direct
+            if self.direct == 0:
+                cur_x += i
 
+            elif self.direct == 1:
+                cur_y += i
 
-ship2_pos = ShipPos()
+            ship_positions.append(Pos(cur_x, cur_y))
+        return ship_positions
 
-
-class SetOfShipsQuantity:
-    def __init__(self, ship1_quantity, ship2_quantity, ship3_quantity):
-        self.ship1_quantity = ship1_quantity
-        self.ship2_quantity = ship2_quantity
-        self.ship3_quantity = ship3_quantity
-
-    def set_ship2(self, ship2_pos):
-        for i in range(self.ship2_quantity):
-            ship2_pos.set_ship_pos()
-            field5[ship2_pos.x][ship2_pos.x] = '■'
-            if ship2_pos.direct == 'h':
-                field5[ship2_pos.x][ship2_pos.y + 1] = '■'
-            if ship2_pos.direct == 'v':
-                field5[ship2_pos.x + 1][ship2_pos.y] = '■'
+    def shooten(self, shot):
+        return shot in self.positions
 
 
-class GameField:
-    def __init__(self, set_of_ships_quantity):
-        self.set_of_ships_quantity = set_of_ships_quantity
-        self.ship_on_field = show_field(field5)
-        # self.set_ship1(ship1_pos)
-        self.set_ship2(ship2_pos)
-        # self.set_ship3(ship3_pos)
+class Board:
+    def __init__(self, hide=False, size=6):
+        self.size = size
+        self.hide = hide
 
-    def set_ship1(self, ship1_pos):
-        for i in range(self.ship1_quantity):
-            ship1_pos.x = int(input("Enter coordinates ship1 'x':\n"))
-            ship1_pos.y = int(input("Enter coordinates ship1 'y':\n"))
-            field5[ship1_pos.x][ship1_pos.y] = '■'
+        self.count_of_destroyed_ships = 0
 
-    def set_ship2(self, ship2_pos):
-        for i in range(self.ship2_quantity):
-            ship2_pos.x = int(input("Enter coordinates ship2 'x':\n"))
-            ship2_pos.y = int(input("Enter coordinates ship2 'y':\n"))
-            field5[ship2_pos.x][ship2_pos.y] = '■'
-            if ship2_pos.direct == 'h':
-                field5[ship2_pos.x][ship2_pos.y + 1] = '■'
-            if ship2_pos.direct == 'v':
-                field5[ship2_pos.x + 1][ship2_pos.y] = '■'
+        self.field = [['~']*size for _ in range(size)]
 
-    def set_ship3(self, ship3_pos):
-        for i in range(self.ship2_quantity):
-            ship3_pos.x = int(input("Enter coordinates ship3 'x':\n"))
-            ship3_pos.y = int(input("Enter coordinates ship3 'y':\n"))
-            field5[ship3_pos.x][ship3_pos.y] = '■'
-            if ship3_pos.direct == 'h':
-                field5[ship3_pos.x][ship3_pos.y + 1] = '■'
-                field5[ship3_pos.x][ship3_pos.y + 2] = '■'
-            if ship3_pos.direct == 'v':
-                field5[ship3_pos.x + 1][ship3_pos.y] = '■'
-                field5[ship3_pos.x + 2][ship3_pos.y] = '■'
+        self.occupied_cells = []
+        self.ships_on_field = []
 
-    def get_ship_on_field(self):
-        return self.ship_on_field
+    def __str__(self):
+        res = ""
+        res += "  1  2  3  4  5  6"
+        for i, row in enumerate(self.field):
+            res += f"\n{i + 1} {'  '.join(row)}"
+
+        if self.hide:
+            res = res.replace("■", "~")
+        return res
+
+    def out_of_board(self, pos):
+        return not((0 <= pos.x < self.size) and (0 <= pos.y < self.size))
+
+    def contour(self, ship, verb=False):
+        around = [
+            (-1, -1), (-1, 0), (-1, 1),
+            (0, -1), (0, 0), (0, 1),
+            (1, -1), (1, 0), (1, 1)
+        ]
+
+        for pos_ship in ship.positions:
+            for posx, posy in around:
+                cur = Pos(pos_ship.x + posx, pos_ship.y + posy)
+                if not(self.out_of_board(cur)) and cur not in self.occupied_cells:
+                    if verb:
+                        self.field[cur.x][cur.y] = "."
+                    self.occupied_cells.append(cur)
+
+    def add_ship(self, ship):
+        for d in ship.positions:
+            if self.out_of_board(d) or d in self.occupied_cells:
+                raise BoardWrongShipException()
+        for d in ship.positions:
+            self.field[d.x][d.y] = "■"
+            self.occupied_cells.append(d)
+
+        self.ships_on_field.append(ship)
+        self.contour(ship)
+
+    def shot(self, d):
+        if self.out_of_board(d):
+            raise BoardOutException
+
+        if d in self.occupied_cells:
+            raise BoardUsedException
+
+        self.occupied_cells.append(d)
+
+        for ship in self.ships_on_field:
+            if ship.shooten(d):
+                ship.lives -= 1
+                self.field[d.x][d.y] = "X"
+                if ship.lives == 0:
+                    self.count_of_destroyed_ships += 1
+                    self.contour(ship, verb=True)
+                    print("Ship destroyed!")
+                    return False
+                else:
+                    print("Ship is damaged.")
+                    return True
+
+        self.field[d.x][d.y] = "."
+        print("Missed!")
+        return False
+
+    def begin(self):
+        self.occupied_cells = []
 
 
-# def user_hit(f):
-#     global x, y
-#     while True:
-#         hit = input('Enter your coordinates x/y from 0 by 5:\n').split()
-#         if len(hit) != 2:
-#             print('Enter two coordinates.')
-#             continue
-#
-#         if not(hit[0].isdigit() and hit[1].isdigit()):
-#             print('Enter numbers.')
-#             continue
-#
-#         x, y = map(int, hit)
-#         if not(0 <= x < 6 and 0 <= y < 6):
-#             print('Out of range.')
-#             continue
-#
-#         if field[x][y] == ('X' and 'T'):
-#             print('You have already shot there.')
-#             continue
-#         field[x][y] = 'X' if field[x][y] == '■' else 'T'
-#         break
-#     return x, y
-#
-#
-# def ai_hit(f):
-#     while True:
-#         x2, y2 = rnd.randint(0, 5), rnd.randint(0, 5)
-#         if field2[x2][y2] != '-' and '■':
-#             print('negative')
-#             continue
-#         break
-#     return x2, y2
-#
-#
-# ship3(field)
-# while True:
-#     # ship3(field2)
-#     show_field(field)
-#     # show_field_2(field2)
-#     x, y = user_hit(field)
-#     # field[x][y] = 'X' if field[x][y] == '■' else 'T'
-#     # x2, y2 = ai_hit(field2)
-#     # field2[x2][y2] = 'X' if field2[x2][y2] == '-' and '■' else 'T'
+class Player:
+    def __init__(self, player_board, enemy_board):
+        self.player_board = player_board
+        self.enemy_board = enemy_board
+
+    def ask(self):
+        raise NotImplementedError()
+
+    def move(self):
+        while True:
+            try:
+                target = self.ask()
+                repeat = self.enemy_board.shot(target)
+                return repeat
+            except BoardException as e:
+                print(e)
+
+
+class AI(Player):
+    def ask(self):
+        d = Pos(randint(0, 5), randint(0, 5))
+        print(f"Ai move: {d.x+1} {d.y +1}")
+        return d
+
+
+class User(Player):
+    def ask(self):
+        while True:
+            cords = input("Enter your coordinates:\n").split()
+
+            if len(cords) != 2:
+                print("Enter two coordinates.")
+                continue
+
+            x, y = cords
+
+            if not(x.isdigit()) or not(y.isdigit()):
+                print("Enter numbers!")
+                continue
+
+            x, y = int(x), int(y)
+
+            return Pos(x - 1, y - 1)
+
+
+class Game:
+    def __init__(self, size=6):
+        self.size = size
+        pl = self.random_board()
+        co = self.random_board()
+        co.hide = True
+
+        self.ai = AI(co, pl)
+        self.us = User(pl, co)
+
+    def try_board(self):
+        lengths_of_ships = [3, 2, 2, 1, 1, 1, 1]
+        board = Board(size=self.size)
+        attempts = 0
+        for l in lengths_of_ships:
+            while True:
+                attempts += 1
+                if attempts > 2000:
+                    return None
+                ship = Ship(Pos(randint(0, self.size), randint(0, self.size)), l, randint(0, 1))
+                try:
+                    board.add_ship(ship)
+                    break
+                except BoardWrongShipException:
+                    pass
+        board.begin()
+        return board
+
+    def random_board(self):
+        board = None
+        while board is None:
+            board = self.try_board()
+        return board
+
+
+
+
+g = Game()
+print(g.random_board())
