@@ -30,7 +30,9 @@ class Pos:
     def __repr__(self):
         return f"Pos({self.x}, {self.y})"
 
-a = Pos(3,4)
+
+a = Pos(3, 4)
+
 
 class Ship:
     def __init__(self, pos, length, direct):
@@ -139,10 +141,13 @@ class Board:
     def begin(self):
         self.occupied_cells = []
 
+    def defeat(self):
+        return self.count_of_destroyed_ships == len(self.ships_on_field)
+
 
 class Player:
-    def __init__(self, player_board, enemy_board):
-        self.player_board = player_board
+    def __init__(self, own_board, enemy_board):
+        self.own_board = own_board
         self.enemy_board = enemy_board
 
     def ask(self):
@@ -188,12 +193,12 @@ class User(Player):
 class Game:
     def __init__(self, size=6):
         self.size = size
-        pl = self.random_board()
-        co = self.random_board()
-        co.hide = True
+        own_board = self.random_board()
+        enemy_board = self.random_board()
+        enemy_board.hide = True
 
-        self.ai = AI(co, pl)
-        self.us = User(pl, co)
+        self.ai = AI(own_board, enemy_board)
+        self.us = User(own_board, enemy_board)
 
     def try_board(self):
         lengths_of_ships = [3, 2, 2, 1, 1, 1, 1]
@@ -219,8 +224,62 @@ class Game:
             board = self.try_board()
         return board
 
+    def decorator(func):
+        def wrapper():
+            greet_ = func()
+            edging = ''
+            edging += f"|{'-' * (len(greet_))}|"
+            edging += f'\n|{greet_}|\n'
+            edging += f"|{'-' * len(greet_)}|\n"
+            edging += f"|Input format: x y                |\n"
+            edging += f"|x - columns                      |\n"
+            edging += f"|y - rows                         |\n"
+            edging += f"|{'-' * (len(greet_))}|\n"
+            return edging
 
+        return wrapper
+
+    @staticmethod
+    @decorator
+    def greetings():
+        return 'Welcome to the game - Battleship!'
+
+    def loop(self):
+        num = 0
+        while True:
+            print("-"*20)
+            print("Your board:")
+            print(self.us.own_board)
+            print("-" * 20)
+            print("Your opponent's board:")
+            print(self.ai.own_board)
+            print("-" * 20)
+            if num % 2 == 0:
+                print("User move.")
+                repeat = self.us.move()
+            else:
+                print("AI move.")
+                repeat = self.ai.move()
+
+            if repeat:
+                num -= 1
+
+            if self.ai.own_board.defeat():
+                print("-"*20)
+                print("User WINS!")
+                print(self.ai.own_board)
+                break
+
+            if self.us.own_board.defeat():
+                print("-" * 20)
+                print("AI WINS!")
+                break
+            num += 1
+
+    def start(self):
+        self.greetings()
+        self.loop()
 
 
 g = Game()
-print(g.random_board())
+g.start()
