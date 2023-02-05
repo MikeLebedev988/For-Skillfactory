@@ -19,6 +19,36 @@ class BoardWrongShipException(BoardException):
     pass
 
 
+def ask_huyask():
+    while True:
+        cords = input("Enter your coordinates:\n").split()
+
+        if len(cords) != 2:
+            print("Enter two coordinates.")
+            continue
+
+        x, y = cords
+
+        if not (x.isdigit()) or not (y.isdigit()):
+            print("Enter numbers!")
+            continue
+
+        x, y = int(x), int(y)
+
+        return Pos(x - 1, y - 1)
+
+
+def direction():
+    direct = input("Enter the direction of your ships:"
+                   "\n(Answer: h - horizontally"
+                   "\nanything else - vertically.)")
+    if direct == "h":
+        direct = 1
+    else:
+        direct = 0
+    return direct
+
+
 class Pos:
     def __init__(self, x, y):
         self.x = x
@@ -65,7 +95,7 @@ class Board:
 
         self.count_of_destroyed_ships = 0
 
-        self.field = [['~']*size for _ in range(size)]
+        self.field = [['~'] * size for _ in range(size)]
 
         self.occupied_cells = []
         self.ships_on_field = []
@@ -81,7 +111,7 @@ class Board:
         return res
 
     def out_of_board(self, pos):
-        return not((0 <= pos.x < self.size) and (0 <= pos.y < self.size))
+        return not ((0 <= pos.x < self.size) and (0 <= pos.y < self.size))
 
     def contour(self, ship, verb=False):
         around = [
@@ -93,7 +123,7 @@ class Board:
         for pos_ship in ship.positions:
             for pos_x, pos_y in around:
                 cur = Pos(pos_ship.x + pos_x, pos_ship.y + pos_y)
-                if not(self.out_of_board(cur)) and cur not in self.occupied_cells:
+                if not (self.out_of_board(cur)) and cur not in self.occupied_cells:
                     if verb:
                         self.field[cur.x][cur.y] = "."
                     self.occupied_cells.append(cur)
@@ -163,7 +193,7 @@ class Player:
 class AI(Player):
     def ask(self):
         d = Pos(randint(0, 5), randint(0, 5))
-        print(f"Ai move: {d.x+1} {d.y +1}")
+        print(f"Ai move: {d.x + 1} {d.y + 1}")
         return d
 
 
@@ -179,7 +209,7 @@ class User(Player):
 
             x, y = cords
 
-            if not(x.isdigit()) or not(y.isdigit()):
+            if not (x.isdigit()) or not (y.isdigit()):
                 print("Enter numbers!")
                 continue
 
@@ -190,19 +220,31 @@ class User(Player):
 
 class Game:
     def __init__(self, size=6):
+        self.ai_ind = None
+        self.ai = None
+        self.us = None
+        self.user_ind = None
         self.size = size
-        players_board = self.random_board()
-        ai_board = self.random_board()
-        ai_board.hide = False
 
-        self.us = User(players_board, ai_board)
-        self.ai = AI(ai_board, players_board)
-
-    def set_ship_by_player(self):
+    def player_try_board(self):
         port_of_ships = [3, 2, 2, 1, 1, 1, 1]
         board = Board(size=self.size)
-        for i in port_of_ships:
-            ship = Ship(us.ask(), i, us.direct)
+        attempts = 0
+        for l in port_of_ships:
+            while True:
+                attempts += 1
+                if attempts > 2000:
+                    return None
+                ship = Ship(ask_huyask(), l, direction())
+                try:
+                    board.add_ship(ship)
+                    print(board)
+                    break
+                except BoardWrongShipException:
+                    print("BoardWrongShipException")
+                    pass
+        board.begin()
+        return board
 
     def try_board(self):
         port_of_ships = [3, 2, 2, 1, 1, 1, 1]
@@ -216,8 +258,10 @@ class Game:
                 ship = Ship(Pos(randint(0, self.size), randint(0, self.size)), l, randint(0, 1))
                 try:
                     board.add_ship(ship)
+                    print(board)
                     break
                 except BoardWrongShipException:
+                    print("BoardWrongShipException")
                     pass
         board.begin()
         return board
@@ -244,7 +288,7 @@ class Game:
     def loop(self):
         num = 0
         while True:
-            print("-"*20)
+            print("-" * 20)
             print("Your board:")
             print(self.us.board1)
             print("-" * 20)
@@ -262,7 +306,7 @@ class Game:
                 num -= 1
 
             if self.ai.board1.defeat():
-                print("-"*20)
+                print("-" * 20)
                 print("User WINS!")
                 print(self.ai.board1)
                 break
@@ -273,9 +317,66 @@ class Game:
                 break
             num += 1
 
+    def loop2(self):
+        num = 0
+        while True:
+            print("-" * 20)
+            print("Your board:")
+            print(self.user_ind.board1)
+            print("-" * 20)
+            print("Your opponent's board:")
+            print(self.ai_ind.board1)
+            print("-" * 20)
+            if num % 2 == 0:
+                print("User move.")
+                repeat = self.user_ind.move()
+            else:
+                print("AI move.")
+                repeat = self.ai_ind.move()
+
+            if repeat:
+                num -= 1
+
+            if self.ai_ind.board1.defeat():
+                print("-" * 20)
+                print("User WINS!")
+                print(self.ai_ind.board1)
+                break
+
+            if self.user_ind.board1.defeat():
+                print("-" * 20)
+                print("AI WINS!")
+                break
+            num += 1
+
+    @staticmethod
+    def question():
+        question = input("Set up ships manually or automatically?"
+                         "\n(Answer: m - manually"
+                         "\nanything else - automatically.\n")
+        return question
+
+    def manually(self):
+        players_board2 = self.player_try_board()
+        ai_board = self.random_board()
+        self.user_ind = User(players_board2, ai_board)
+        self.ai_ind = AI(ai_board, players_board2)
+        self.loop2()
+
+    def automatically(self):
+        players_board = self.random_board()
+        ai_board = self.random_board()
+        ai_board.hide = False
+        self.us = User(players_board, ai_board)
+        self.ai = AI(ai_board, players_board)
+        self.loop()
+
     def start(self):
         self.greetings()
-        self.loop()
+        if self.question() == "m":
+            self.manually()
+        else:
+            self.automatically()
 
 
 g = Game()
