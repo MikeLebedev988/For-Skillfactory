@@ -12,7 +12,7 @@ class BoardOutException(BoardException):
 
 class BoardUsedException(BoardException):
     def __str__(self):
-        return "You have already shooted in this cell."
+        return "You have already shot this cell."
 
 
 class BoardWrongShipException(BoardException):
@@ -29,9 +29,6 @@ class Pos:
 
     def __repr__(self):
         return f"Pos({self.x}, {self.y})"
-
-
-a = Pos(3, 4)
 
 
 class Ship:
@@ -94,8 +91,8 @@ class Board:
         ]
 
         for pos_ship in ship.positions:
-            for posx, posy in around:
-                cur = Pos(pos_ship.x + posx, pos_ship.y + posy)
+            for pos_x, pos_y in around:
+                cur = Pos(pos_ship.x + pos_x, pos_ship.y + pos_y)
                 if not(self.out_of_board(cur)) and cur not in self.occupied_cells:
                     if verb:
                         self.field[cur.x][cur.y] = "."
@@ -146,9 +143,9 @@ class Board:
 
 
 class Player:
-    def __init__(self, own_board, enemy_board):
-        self.own_board = own_board
-        self.enemy_board = enemy_board
+    def __init__(self, board1, board2):
+        self.board1 = board1
+        self.board2 = board2
 
     def ask(self):
         raise NotImplementedError()
@@ -157,7 +154,7 @@ class Player:
         while True:
             try:
                 target = self.ask()
-                repeat = self.enemy_board.shot(target)
+                repeat = self.board2.shot(target)
                 return repeat
             except BoardException as e:
                 print(e)
@@ -171,6 +168,7 @@ class AI(Player):
 
 
 class User(Player):
+
     def ask(self):
         while True:
             cords = input("Enter your coordinates:\n").split()
@@ -193,18 +191,24 @@ class User(Player):
 class Game:
     def __init__(self, size=6):
         self.size = size
-        own_board = self.random_board()
-        enemy_board = self.random_board()
-        enemy_board.hide = True
+        players_board = self.random_board()
+        ai_board = self.random_board()
+        ai_board.hide = False
 
-        self.ai = AI(own_board, enemy_board)
-        self.us = User(own_board, enemy_board)
+        self.us = User(players_board, ai_board)
+        self.ai = AI(ai_board, players_board)
+
+    def set_ship_by_player(self):
+        port_of_ships = [3, 2, 2, 1, 1, 1, 1]
+        board = Board(size=self.size)
+        for i in port_of_ships:
+            ship = Ship(us.ask(), i, us.direct)
 
     def try_board(self):
-        lengths_of_ships = [3, 2, 2, 1, 1, 1, 1]
+        port_of_ships = [3, 2, 2, 1, 1, 1, 1]
         board = Board(size=self.size)
         attempts = 0
-        for l in lengths_of_ships:
+        for l in port_of_ships:
             while True:
                 attempts += 1
                 if attempts > 2000:
@@ -224,35 +228,28 @@ class Game:
             board = self.try_board()
         return board
 
-    def decorator(func):
-        def wrapper():
-            greet_ = func()
-            edging = ''
-            edging += f"|{'-' * (len(greet_))}|"
-            edging += f'\n|{greet_}|\n'
-            edging += f"|{'-' * len(greet_)}|\n"
-            edging += f"|Input format: x y                |\n"
-            edging += f"|x - columns                      |\n"
-            edging += f"|y - rows                         |\n"
-            edging += f"|{'-' * (len(greet_))}|\n"
-            return edging
-
-        return wrapper
-
     @staticmethod
-    @decorator
     def greetings():
-        return 'Welcome to the game - Battleship!'
+        greet_ = "Welcome to the game - Battleship!"
+        edging = ''
+        edging += f"|{'-' * (len(greet_))}|"
+        edging += f'\n|{greet_}|\n'
+        edging += f"|{'-' * len(greet_)}|\n"
+        edging += f"|Input format: x y                |\n"
+        edging += f"|x - columns                      |\n"
+        edging += f"|y - rows                         |\n"
+        edging += f"|{'-' * (len(greet_))}|\n"
+        return print(edging)
 
     def loop(self):
         num = 0
         while True:
             print("-"*20)
             print("Your board:")
-            print(self.us.own_board)
+            print(self.us.board1)
             print("-" * 20)
             print("Your opponent's board:")
-            print(self.ai.own_board)
+            print(self.ai.board1)
             print("-" * 20)
             if num % 2 == 0:
                 print("User move.")
@@ -264,13 +261,13 @@ class Game:
             if repeat:
                 num -= 1
 
-            if self.ai.own_board.defeat():
+            if self.ai.board1.defeat():
                 print("-"*20)
                 print("User WINS!")
-                print(self.ai.own_board)
+                print(self.ai.board1)
                 break
 
-            if self.us.own_board.defeat():
+            if self.us.board1.defeat():
                 print("-" * 20)
                 print("AI WINS!")
                 break
