@@ -1,4 +1,5 @@
 from random import randint
+import time
 
 
 class BoardException(Exception):
@@ -17,36 +18,6 @@ class BoardUsedException(BoardException):
 
 class BoardWrongShipException(BoardException):
     pass
-
-
-def ask_huyask():
-    while True:
-        cords = input("Enter your coordinates:\n").split()
-
-        if len(cords) != 2:
-            print("Enter two coordinates.")
-            continue
-
-        x, y = cords
-
-        if not (x.isdigit()) or not (y.isdigit()):
-            print("Enter numbers!")
-            continue
-
-        x, y = int(x), int(y)
-
-        return Pos(x - 1, y - 1)
-
-
-def direction():
-    direct = input("Enter the direction of your ships:"
-                   "\n(Answer: h - horizontally"
-                   "\nanything else - vertically.)")
-    if direct == "h":
-        direct = 1
-    else:
-        direct = 0
-    return direct
 
 
 class Pos:
@@ -156,7 +127,7 @@ class Board:
                     self.count_of_destroyed_ships += 1
                     self.contour(ship, verb=True)
                     print("Ship destroyed!")
-                    return False
+                    return True
                 else:
                     print("Ship is damaged.")
                     return True
@@ -170,6 +141,36 @@ class Board:
 
     def defeat(self):
         return self.count_of_destroyed_ships == len(self.ships_on_field)
+
+    @staticmethod
+    def ask_ship_cord():
+        while True:
+            cords = input("Enter your coordinates:\n").split()
+
+            if len(cords) != 2:
+                print("Enter two coordinates.")
+                continue
+
+            x, y = cords
+
+            if not (x.isdigit()) or not (y.isdigit()):
+                print("Enter numbers!")
+                continue
+
+            x, y = int(x), int(y)
+
+            return Pos(x - 1, y - 1)
+
+    @staticmethod
+    def direction():
+        direct = input("Enter the direction of your ships:"
+                       "\n(Answer: h - horizontally"
+                       "\nanything else - vertically.)\n")
+        if direct == "h":
+            direct = 1
+        else:
+            direct = 0
+        return direct
 
 
 class Player:
@@ -224,18 +225,18 @@ class Game:
         self.ai = None
         self.us = None
         self.user_ind = None
+        self.port_of_ships = [3, 2, 2, 1, 1, 1, 1]
         self.size = size
 
     def player_try_board(self):
-        port_of_ships = [3, 2, 2, 1, 1, 1, 1]
         board = Board(size=self.size)
         attempts = 0
-        for l in port_of_ships:
+        for l in self.port_of_ships:
             while True:
                 attempts += 1
                 if attempts > 2000:
                     return None
-                ship = Ship(ask_huyask(), l, direction())
+                ship = Ship(board.ask_ship_cord(), l, board.direction())
                 try:
                     board.add_ship(ship)
                     print(board)
@@ -247,10 +248,9 @@ class Game:
         return board
 
     def try_board(self):
-        port_of_ships = [3, 2, 2, 1, 1, 1, 1]
         board = Board(size=self.size)
         attempts = 0
-        for l in port_of_ships:
+        for l in self.port_of_ships:
             while True:
                 attempts += 1
                 if attempts > 2000:
@@ -288,31 +288,35 @@ class Game:
     def loop(self):
         num = 0
         while True:
-            print("-" * 20)
+            print("-" * 18)
             print("Your board:")
             print(self.us.board1)
-            print("-" * 20)
+            print("-" * 18)
             print("Your opponent's board:")
             print(self.ai.board1)
-            print("-" * 20)
+            print("-" * 18)
             if num % 2 == 0:
                 print("User move.")
                 repeat = self.us.move()
+                time.sleep(0.7)
             else:
                 print("AI move.")
                 repeat = self.ai.move()
+                time.sleep(0.7)
 
             if repeat:
                 num -= 1
 
             if self.ai.board1.defeat():
-                print("-" * 20)
-                print("User WINS!")
+                time.sleep(0.7)
+                print("-" * 18)
                 print(self.ai.board1)
+                print("User WINS!")
                 break
 
             if self.us.board1.defeat():
-                print("-" * 20)
+                time.sleep(0.7)
+                print("-" * 18)
                 print("AI WINS!")
                 break
             num += 1
@@ -320,31 +324,35 @@ class Game:
     def loop2(self):
         num = 0
         while True:
-            print("-" * 20)
+            print("-" * 18)
             print("Your board:")
             print(self.user_ind.board1)
-            print("-" * 20)
+            print("-" * 18)
             print("Your opponent's board:")
             print(self.ai_ind.board1)
-            print("-" * 20)
+            print("-" * 18)
             if num % 2 == 0:
                 print("User move.")
                 repeat = self.user_ind.move()
+                time.sleep(0.7)
             else:
                 print("AI move.")
                 repeat = self.ai_ind.move()
+                time.sleep(0.7)
 
             if repeat:
                 num -= 1
 
             if self.ai_ind.board1.defeat():
-                print("-" * 20)
-                print("User WINS!")
+                time.sleep(0.7)
+                print("-" * 18)
                 print(self.ai_ind.board1)
+                print("User WINS!")
                 break
 
             if self.user_ind.board1.defeat():
-                print("-" * 20)
+                time.sleep(0.7)
+                print("-" * 18)
                 print("AI WINS!")
                 break
             num += 1
@@ -359,6 +367,7 @@ class Game:
     def manually(self):
         players_board2 = self.player_try_board()
         ai_board = self.random_board()
+        ai_board.hide = True
         self.user_ind = User(players_board2, ai_board)
         self.ai_ind = AI(ai_board, players_board2)
         self.loop2()
@@ -366,7 +375,7 @@ class Game:
     def automatically(self):
         players_board = self.random_board()
         ai_board = self.random_board()
-        ai_board.hide = False
+        ai_board.hide = True
         self.us = User(players_board, ai_board)
         self.ai = AI(ai_board, players_board)
         self.loop()
