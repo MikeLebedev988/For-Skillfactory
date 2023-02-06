@@ -239,10 +239,8 @@ class Game:
                 ship = Ship(board.ask_ship_cord(), l, board.direction())
                 try:
                     board.add_ship(ship)
-                    print(board)
                     break
                 except BoardWrongShipException:
-                    print("BoardWrongShipException")
                     pass
         board.begin()
         return board
@@ -258,10 +256,8 @@ class Game:
                 ship = Ship(Pos(randint(0, self.size), randint(0, self.size)), l, randint(0, 1))
                 try:
                     board.add_ship(ship)
-                    print(board)
                     break
                 except BoardWrongShipException:
-                    print("BoardWrongShipException")
                     pass
         board.begin()
         return board
