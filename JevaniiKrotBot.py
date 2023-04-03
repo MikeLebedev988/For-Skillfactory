@@ -1,5 +1,5 @@
 import telebot
-from utilities import ConversionException, CurrencyConverter
+from extensions import APIException, CurrencyConverter
 from settings import currencies, TOKEN
 
 bot = telebot.TeleBot(TOKEN)
@@ -27,11 +27,11 @@ def convert(message: telebot.types.Message):
     try:
         parameters = message.text.split(" ")
         if len(parameters) != 3:
-            raise ConversionException("Quantity of parameters is not correct.")
+            raise APIException("Quantity of parameters is not correct.")
 
         quote, base, amount = parameters
-        total_base = CurrencyConverter.convert(quote, base, amount)
-    except ConversionException as e:
+        total_base = CurrencyConverter.get_price(quote, base, amount)
+    except APIException as e:
         bot.reply_to(message, f"User error.\n{e}")
     except Exception as e:
         bot.reply_to(message, f"Command performing is failed.\n{e}")
