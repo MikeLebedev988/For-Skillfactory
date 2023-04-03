@@ -1,6 +1,6 @@
 import requests
 import json
-from config import currencies
+from settings import currencies
 
 
 class ConversionException(Exception):

@@ -1,6 +1,6 @@
 import telebot
 from utilities import ConversionException, CurrencyConverter
-from config import currencies, TOKEN
+from settings import currencies, TOKEN
 
 bot = telebot.TeleBot(TOKEN)
 
